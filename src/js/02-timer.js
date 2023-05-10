@@ -9,6 +9,9 @@ const dataHours = document.querySelector('[data-hours]');
 const dataMinutes = document.querySelector('[data-minutes]');
 const dataSecond = document.querySelector('[data-seconds]');
 
+let selectedDate = null;
+let timerId;
+
 const countDown = flatpickr(dataTime, {
     enableTime: true,
     time_24hr: true,
@@ -19,9 +22,6 @@ const countDown = flatpickr(dataTime, {
       selectedDate = selectedDates[0];      
     }}
     );
-
-    let selectedDate = null;
-    let timerId;
 
     function addLeadingZero(val) {
      return String(val).padStart(2, '0');
@@ -47,14 +47,11 @@ const countDown = flatpickr(dataTime, {
                 hours = addLeadingZero(Math.floor((difference % day) / hour));
                 minutes = addLeadingZero(Math.floor(((difference % day) % hour) / minute));
                 seconds = addLeadingZero(Math.floor((((difference % day) % hour) % minute) / second));
-            } else {
-                days = hours = minutes = seconds = '00';
-            }
-                    
+            }   
             dataDays.textContent = days;
             dataHours.textContent = hours;
             dataMinutes.textContent = minutes;
-            dataSecond.innerHTML = seconds;
+            dataSecond.textContent = seconds;
     
             return { 
                 difference,
