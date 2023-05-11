@@ -4,77 +4,91 @@ import Notiflix from 'notiflix';
 
 const dataTime = document.querySelector('#datetime-picker');
 const dataStart = document.querySelector('[data-start]');
+const timer = document.querySelector(`.timer`);
+const fields = document.querySelectorAll(`.field`);
 const dataDays = document.querySelector('[data-days]');
 const dataHours = document.querySelector('[data-hours]');
 const dataMinutes = document.querySelector('[data-minutes]');
 const dataSecond = document.querySelector('[data-seconds]');
 
-let selectedDate = null;
-let timerId;
 
-const countDown = flatpickr(dataTime, {
+let selectedDate = 0;
+let timerId= null;
+dataStart.disabled = true;
+
+dataStart.addEventListener('click', startTimer);
+
+timer.style.display = "flex";
+fields.forEach(field =>{
+    field.style.display = "flex";
+    field.style.flexDirection ="column";
+    field.style.margin ="5px";
+    field.style.textAlign ="center";
+    field.style.color = "blue";
+})
+
+function startTimer() {
+    timerId = setInterval(() => {
+    const currentTime = Date.now();
+    const deltaTime = selectedDate - currentTime;
+    const { days, hours, minutes, seconds } = convertMs(deltaTime);
+    updateTimer({ days, hours, minutes, seconds });
+    stopTimer(deltaTime);
+    }, 1000);
+    dataStart.disabled = true;
+    dataTime.disabled = true;
+  }
+
+function stopTimer(time) {
+    if (time < 1000) {
+    clearInterval(timerId);
+    dataTime.disabled = false;
+  }
+  }
+
+const options = {
     enableTime: true,
     time_24hr: true,
     defaultDate: new Date(),
     minuteIncrement: 1,
     onClose(selectedDates) {
-      console.log(selectedDates[0]);
-      selectedDate = selectedDates[0];      
+        if (selectedDates[0] < Date.now()) {
+            Notiflix.Notify.failure('Please choose a date in the future');
+          } else {
+            dataStart.disabled = false;
+            selectedDate = selectedDates[0];
+          }     
     }}
-    );
+    ;
 
-    function addLeadingZero(val) {
-     return String(val).padStart(2, '0');
+function addLeadingZero(val) {
+    return String(val).padStart(2, '0');
     }
+
+function updateTimer ({ days, hours, minutes, seconds }){
+        
+    dataDays.textContent = addLeadingZero(days);
+    dataHours.textContent = addLeadingZero(hours);
+    dataMinutes.textContent = addLeadingZero(minutes);
+    dataSecond.textContent = addLeadingZero(seconds);
+    };
     
-    function convertMs(ms) {
-        timerId = setInterval(() => {
-        const difference = Date.parse(selectedDate) - Date.parse(new Date());
-    
-            if(difference <= 0) {
-                clearInterval(timerId);
-            } 
-    
-            const second = 1000;
-            const minute = second * 60;
-            const hour = minute * 60;
-            const day = hour * 24;
-    
-            let days, hours, minutes, seconds;
-    
-            if(difference > 0) {
-                days = addLeadingZero(Math.floor(difference / day));
-                hours = addLeadingZero(Math.floor((difference % day) / hour));
-                minutes = addLeadingZero(Math.floor(((difference % day) % hour) / minute));
-                seconds = addLeadingZero(Math.floor((((difference % day) % hour) % minute) / second));
-            }   
-            dataDays.textContent = days;
-            dataHours.textContent = hours;
-            dataMinutes.textContent = minutes;
-            dataSecond.textContent = seconds;
-    
+function convertMs(ms) {
+        
+    const second = 1000;
+    const minute = second * 60;
+    const hour = minute * 60;
+    const day = hour * 24;
+
+    const days = Math.floor(ms / day);
+    const hours = Math.floor((ms % day) / hour);
+    const minutes = Math.floor(((ms % day) % hour) / minute);
+    const seconds = Math.floor((((ms % day) % hour) % minute) / second);     
             return { 
-                difference,
                 days, 
                 hours, 
                 minutes, 
                 seconds };
-        }, 1000);
     }
 
-    function countdown() {
-        const newDate = new Date().getTime();
-        const difference = selectedDate.getTime() - newDate;  
-        if(difference <= 0) {
-            Notiflix.Notify.failure("Please choose a date in the future");
-            dataStart.disabled = true;
-            clearInterval(timerId);
-        } 
-        dataStart.disabled = false;
-    
-        convertMs(difference);
-       
-    }
-    
-    dataStart.addEventListener('click', countdown);
-    
+    flatpickr(dataTime, options) 
