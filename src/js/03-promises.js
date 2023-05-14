@@ -39,6 +39,9 @@ function promiseCreated(e) {
         
       });
       delay += step
+      if(delay<0||step<0||amount<=0){
+        alert("data must be positive");
+      }
   }
 }
   
